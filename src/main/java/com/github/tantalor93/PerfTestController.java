@@ -6,22 +6,16 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+
 import io.smallrye.mutiny.Uni;
-import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.mutiny.core.Vertx;
-import io.vertx.mutiny.core.buffer.Buffer;
-import io.vertx.mutiny.ext.web.client.WebClient;
 
 @Path("/")
 public class PerfTestController {
 
-    private WebClient client;
-
     @Inject
-    public PerfTestController(Vertx vertx) {
-        client = WebClient
-                .create(vertx, new WebClientOptions().setDefaultHost("mock-server").setDefaultPort(8081));
-    }
+    @RestClient
+    private MockClient mockClient;
 
     @GET
     @Path("/ping")
@@ -33,8 +27,7 @@ public class PerfTestController {
     @Path("/perf-test")
     @Produces("application/json")
     public Uni<String> perfTest(String body) {
-        return client.post("/mock").sendBuffer(Buffer.buffer(body))
-                .map(e -> e.bodyAsJson(SomeResponse.class))
+        return mockClient.getMock(body)
                 .map(SomeResponse::getMsg);
     }
 }
